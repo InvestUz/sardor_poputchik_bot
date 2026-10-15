@@ -1,11 +1,12 @@
-import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { api, fileUrl, uploadFile } from "../api";
 import { dateTime, locName, money, tashkentDate, timeOnly } from "../format";
 import { useApp } from "../store";
 import type { Listing, Loc, PriceHint, UserPublic, Vehicle } from "../types";
-import { Alert, ArrowLeft, Car, Check, ChevronRight, Close, Info, Lock, Plus, Star, Swap } from "./icons";
+import { Alert, ArrowLeft, Car, Check, ChevronRight, Close, Info, Locate, Lock, Pin, Plus, Search as SearchIcon, Star, Swap } from "./icons";
 import { tg } from "../tg";
+import { geoSupported, getPosition, hasCoords, locHaystack, mapSearchUrl, nearestLoc, searchKey, splitMapLinks, withGeo, type GeoError } from "../geo";
 
 export function Loading() {
   const { t } = useApp();
@@ -26,7 +27,16 @@ export function ErrorBox({ error, onRetry }: { error: unknown; onRetry?: () => v
   );
 }
 
-export function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
+/** `group` renders a <div role="group"> instead of <label> — for compound inputs (several fields / buttons). */
+export function Field({ label, hint, group, children }: { label: string; hint?: string; group?: boolean; children: ReactNode }) {
+  if (group)
+    return (
+      <div className="field" role="group" aria-label={label}>
+        <span className="label">{label}</span>
+        {children}
+        {hint && <span className="hint">{hint}</span>}
+      </div>
+    );
   return (
     <label className="field">
       <span className="label">{label}</span>
@@ -104,37 +114,211 @@ export function PrivateNote({ text }: { text: string }) {
   );
 }
 
+const POPULAR = ["toshkent", "samarkand", "buhoro", "fargona", "andijon", "namangan", "karshi", "nukus"];
+
+/** One city row in the picker sheet (≥48px, check on the selected one). */
+function CityRow({ title, sub, on, onClick, icon, subError }: { title: string; sub?: string; on: boolean; onClick: () => void; icon?: ReactNode; subError?: boolean }) {
+  return (
+    <button type="button" className={`city-row ${on ? "on" : ""}`} aria-pressed={on} onClick={onClick}>
+      {icon && <IconCircle>{icon}</IconCircle>}
+      <span className="body">
+        <span className="t">{title}</span>
+        {sub && <span className={`s ${subError ? "err" : ""}`}>{sub}</span>}
+      </span>
+      {on && <Check size={20} strokeWidth={2.2} className="ok" />}
+    </button>
+  );
+}
+
+/** Bottom-sheet city picker body: sticky search, nearby, popular chips, region-grouped list. */
+function CitySheet({
+  value,
+  onPick,
+  optional,
+}: {
+  value: number | "";
+  onPick: (v: number | "") => void;
+  optional?: boolean;
+}) {
+  const { locations, lang, t } = useApp();
+  const [q, setQ] = useState("");
+  const [geo, setGeo] = useState<"idle" | "busy" | GeoError | "none">("idle");
+  const input = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const id = window.setTimeout(() => input.current?.focus({ preventScroll: true }), 50);
+    return () => window.clearTimeout(id);
+  }, []);
+  const region = (l: Loc) => (lang === "ru" ? l.region_ru : l.region_uz);
+  const index = useMemo(() => locations.map((l) => ({ l, key: locHaystack(l), name: searchKey(l.name_uz), name2: searchKey(l.name_ru) })), [locations]);
+  const key = searchKey(q);
+  const canGeo = geoSupported() && locations.some(hasCoords);
+
+  async function nearby() {
+    setGeo("busy");
+    try {
+      const p = await getPosition();
+      const n = nearestLoc(locations, p.lat, p.lon);
+      if (!n) return setGeo("none");
+      setGeo("idle");
+      onPick(n.id);
+    } catch (e) {
+      setGeo(typeof e === "string" ? (e as GeoError) : "unavailable");
+    }
+  }
+
+  let body: ReactNode;
+  if (key) {
+    const hits = index
+      .filter((x) => x.key.includes(key))
+      .sort((a, b) => Number(!(a.name.startsWith(key) || a.name2.startsWith(key))) - Number(!(b.name.startsWith(key) || b.name2.startsWith(key))));
+    body = hits.length ? (
+      <div className="city-list">
+        {hits.map(({ l }) => (
+          <CityRow key={l.id} title={locName(l, lang)} sub={region(l)} on={value === l.id} onClick={() => onPick(l.id)} />
+        ))}
+      </div>
+    ) : (
+      <div className="city-empty muted">{t("city.not_found")}</div>
+    );
+  } else {
+    const groups = new Map<string, Loc[]>();
+    for (const l of locations) groups.set(region(l), [...(groups.get(region(l)) ?? []), l]);
+    const popular = POPULAR.map((p) => index.find((x) => x.name === p || x.name.startsWith(p + " "))?.l).filter((l): l is Loc => !!l);
+    const geoSub =
+      geo === "busy" ? t("geo.locating") : geo === "denied" ? t("geo.denied") : geo === "timeout" ? t("geo.timeout") : geo === "unavailable" ? t("geo.unavailable") : geo === "none" ? t("city.not_found") : t("geo.nearby_sub");
+    body = (
+      <>
+        {optional && <div className="city-list"><CityRow title={t("city.any")} on={value === ""} onClick={() => onPick("")} /></div>}
+        {canGeo && (
+          <div className="city-list">
+            <CityRow icon={<Locate size={20} />} title={t("geo.nearby")} sub={geoSub} subError={geo !== "idle" && geo !== "busy"} on={false} onClick={nearby} />
+            {geo !== "idle" && geo !== "busy" && <span className="sr-only" role="alert">{geoSub}</span>}
+          </div>
+        )}
+        {popular.length > 0 && (
+          <>
+            <div className="city-region static">{t("city.popular")}</div>
+            <Chips options={popular.map((l) => ({ value: l.id, label: locName(l, lang) }))} value={value === "" ? null : value} onChange={(v) => onPick(v)} label={t("city.popular")} />
+          </>
+        )}
+        {[...groups.entries()].map(([g, items]) => (
+          <div key={g} className="city-group">
+            <div className="city-region">{g}</div>
+            <div className="city-list">
+              {items.map((l) => (
+                <CityRow key={l.id} title={locName(l, lang)} on={value === l.id} onClick={() => onPick(l.id)} />
+              ))}
+            </div>
+          </div>
+        ))}
+      </>
+    );
+  }
+  return (
+    <>
+      <div className="city-search">
+        <SearchIcon size={20} aria-hidden="true" />
+        <input ref={input} type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("city.search_ph")} aria-label={t("city.search_ph")} autoComplete="off" enterKeyHint="search" />
+        {q && (
+          <button type="button" className="clear" onClick={() => { setQ(""); input.current?.focus(); }} aria-label={t("city.clear")}>
+            <Close size={18} />
+          </button>
+        )}
+      </div>
+      {body}
+    </>
+  );
+}
+
+/** Tap-to-open city picker (bottom sheet). Value contract: location id or "". */
 export function LocationSelect({
   value,
   onChange,
   placeholder,
   label,
+  optional,
 }: {
   value: number | "";
   onChange: (v: number | "") => void;
   placeholder: string;
   label?: string;
+  optional?: boolean;
 }) {
   const { locations, lang } = useApp();
-  const groups = new Map<string, Loc[]>();
-  for (const l of locations) {
-    const g = lang === "ru" ? l.region_ru : l.region_uz;
-    groups.set(g, [...(groups.get(g) ?? []), l]);
+  const [open, setOpen] = useState(false);
+  const cur = value === "" ? null : locations.find((l) => l.id === value);
+  return (
+    <>
+      <button type="button" className={`loc-trigger ${cur ? "" : "ph"}`} aria-haspopup="dialog" aria-label={label ? `${label}: ${cur ? locName(cur, lang) : placeholder}` : undefined} onClick={() => setOpen(true)}>
+        {cur ? locName(cur, lang) : placeholder}
+      </button>
+      {open && (
+        <Sheet title={label ?? placeholder} onClose={() => setOpen(false)} className="city-sheet">
+          <CitySheet
+            value={value}
+            optional={optional}
+            onPick={(v) => {
+              onChange(v);
+              setOpen(false);
+            }}
+          />
+        </Sheet>
+      )}
+    </>
+  );
+}
+
+/** Address input + "Joriy joylashuvni qo'shish" (appends coordinates and a map link). */
+export function AddressField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  const { t } = useApp();
+  const [state, setState] = useState<"idle" | "busy" | GeoError>("idle");
+  async function add() {
+    setState("busy");
+    try {
+      const p = await getPosition();
+      onChange(withGeo(value ?? "", p.lat, p.lon));
+      setState("idle");
+    } catch (e) {
+      setState(typeof e === "string" ? (e as GeoError) : "unavailable");
+    }
   }
   return (
-    <select value={value} aria-label={label} onChange={(e) => onChange(e.target.value ? Number(e.target.value) : "")}>
-      <option value="">{placeholder}</option>
-      {[...groups.entries()].map(([g, items]) => (
-        <optgroup key={g} label={g}>
-          {items.map((l) => (
-            <option key={l.id} value={l.id}>
-              {locName(l, lang)}
-            </option>
-          ))}
-        </optgroup>
-      ))}
-    </select>
+    <div className="field">
+      <label className="label" htmlFor={`addr-${label}`}>{label}</label>
+      <input id={`addr-${label}`} type="text" value={value} onChange={(e) => onChange(e.target.value)} />
+      <button type="button" className="geo-add" onClick={add} disabled={state === "busy"}>
+        <Locate size={18} />
+        {state === "busy" ? t("geo.locating") : t("geo.add_current")}
+      </button>
+      {state !== "idle" && state !== "busy" && (
+        <div className="error-text" role="alert" style={{ margin: 0 }}>
+          {t(`geo.${state}`)}
+        </div>
+      )}
+    </div>
   );
+}
+
+/** Shows an address; map URLs become "Xaritada ochish" links, plain addresses get a map search link. */
+export function AddressText({ text, city }: { text: string; city?: string }) {
+  const { t } = useApp();
+  const parts = splitMapLinks(text);
+  const hasUrl = parts.some((p) => p.url);
+  const link = (href: string, k?: number) => (
+    <a key={k} className="map-link" href={href} target="_blank" rel="noreferrer">
+      <Pin size={16} />
+      {t("geo.open_map")}
+    </a>
+  );
+  if (!hasUrl)
+    return (
+      <>
+        {text}
+        <br />
+        {link(mapSearchUrl(city ? `${text}, ${city}` : text))}
+      </>
+    );
+  return <>{parts.map((p, i) => (p.url ? link(p.url, i) : <Fragment key={i}>{p.text!.replace(/\s*·\s*$/, "")} </Fragment>))}</>;
 }
 
 export function AuthImg({ id, className }: { id: number; className?: string }) {
@@ -476,7 +660,7 @@ export function RouteStops({ from, to, size }: { from: ReactNode; to: ReactNode;
   );
 }
 
-/** Pickup / dropoff picker: native selects inside the vertical stops block + swap button. */
+/** Pickup / dropoff picker: tap-to-open city sheets inside the vertical stops block + swap button. */
 export function RoutePick({
   from,
   to,
@@ -484,6 +668,7 @@ export function RoutePick({
   onTo,
   onSwap,
   placeholder,
+  optional,
 }: {
   from: number | "";
   to: number | "";
@@ -491,25 +676,27 @@ export function RoutePick({
   onTo: (v: number | "") => void;
   onSwap: () => void;
   placeholder: string;
+  /** shows an "Istalgan shahar" row (search filters) */
+  optional?: boolean;
 }) {
   const { t } = useApp();
   return (
     <div className="route-pick">
       <div className="stops">
-        <label className="stop">
+        <div className="stop">
           <span className="pt" aria-hidden="true" />
           <span className="txt">
             <span className="k">{t("from")}</span>
-            <LocationSelect value={from} onChange={onFrom} placeholder={placeholder} label={t("from")} />
+            <LocationSelect value={from} onChange={onFrom} placeholder={placeholder} label={t("from")} optional={optional} />
           </span>
-        </label>
-        <label className="stop">
+        </div>
+        <div className="stop">
           <span className="pt to" aria-hidden="true" />
           <span className="txt">
             <span className="k">{t("to")}</span>
-            <LocationSelect value={to} onChange={onTo} placeholder={placeholder} label={t("to")} />
+            <LocationSelect value={to} onChange={onTo} placeholder={placeholder} label={t("to")} optional={optional} />
           </span>
-        </label>
+        </div>
       </div>
       <button className="swap-btn" type="button" onClick={onSwap} aria-label={t("swap")}>
         <Swap size={20} />
@@ -657,7 +844,7 @@ export function Tabs<T extends string>({ tabs, value, onChange }: { tabs: { valu
 }
 
 /** White bottom sheet with a grab handle over a dimmed backdrop. */
-export function Sheet({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
+export function Sheet({ title, onClose, children, className }: { title: string; onClose: () => void; children: ReactNode; className?: string }) {
   const { t } = useApp();
   const close = useRef(onClose);
   close.current = onClose;
@@ -673,7 +860,7 @@ export function Sheet({ title, onClose, children }: { title: string; onClose: ()
   return (
     <div className="sheet-wrap">
       <button type="button" className="sheet-backdrop" aria-label={t("close")} onClick={onClose} />
-      <section className="sheet" role="dialog" aria-modal="true" aria-label={title}>
+      <section className={`sheet ${className ?? ""}`} role="dialog" aria-modal="true" aria-label={title}>
         <span className="grab" aria-hidden="true" />
         <div className="sheet-head">
           <h2>{title}</h2>

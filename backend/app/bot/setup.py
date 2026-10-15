@@ -25,10 +25,10 @@ class BotRuntime:
     async def start(self) -> None:
         notify.set_notifier(self.notifier)
         self.notifier.start()
-        await self.bot.set_my_commands([BotCommand(command="start", description="Menu / Меню")])
+        await self._set_profile()
         if keyboards.webapp_enabled():
             await self.bot.set_chat_menu_button(
-                menu_button=MenuButtonWebApp(text="📱 App", web_app=WebAppInfo(url=settings.miniapp_url))
+                menu_button=MenuButtonWebApp(text="Ilova", web_app=WebAppInfo(url=settings.miniapp_url))
             )
         if settings.bot_mode == "webhook":
             await self.bot.set_webhook(
@@ -42,6 +42,22 @@ class BotRuntime:
             await self.bot.delete_webhook(drop_pending_updates=False)
             self._spawn(self.dp.start_polling(self.bot, allowed_updates=ALLOWED_UPDATES, handle_signals=False))
             log.info("polling started")
+
+    async def _set_profile(self) -> None:
+        """Commands and the description shown before the user presses Start (uz default, ru for Russian clients)."""
+        from app.i18n import t
+
+        try:
+            for lang, code in (("uz", None), ("ru", "ru")):
+                await self.bot.set_my_commands(
+                    [BotCommand(command="start", description=t(lang, "cmd.start")),
+                     BotCommand(command="help", description=t(lang, "cmd.help"))],
+                    language_code=code,
+                )
+                await self.bot.set_my_description(t(lang, "bot.description"), language_code=code)
+                await self.bot.set_my_short_description(t(lang, "bot.short_description"), language_code=code)
+        except Exception:
+            log.exception("could not update bot profile texts")
 
     def feed(self, data: dict) -> None:
         update = Update.model_validate(data, context={"bot": self.bot})

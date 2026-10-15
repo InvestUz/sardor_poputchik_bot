@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PlateView } from "../components/plate";
 import { useLocation, useParams } from "react-router-dom";
 import { api } from "../api";
 import { Calendar, Car, Check, Close, Plate, Road, Seat, Star } from "../components/icons";
@@ -122,7 +123,7 @@ export default function UserTrust() {
                   </IconCircle>
                   <span className="body">
                     <span className="s">{t("o.plate")}</span>
-                    <span className="t">{v.plate_number}</span>
+                    <PlateView plate={v.plate_number} size="sm" />
                   </span>
                 </div>
               )}

@@ -1,5 +1,7 @@
 """Carrier verification (TZ §3, §5.7, §17.1)."""
 
+import re
+
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -43,14 +45,27 @@ async def vehicles(session: AsyncSession, user: User) -> list[Vehicle]:
     return list((await session.execute(q)).scalars())
 
 
+PLATE_REGIONS = {"01", "10", "20", "25", "30", "40", "50", "60", "70", "75", "80", "85", "90", "95"}
+# individual: 01 A 123 BC ; legal entity: 01 123 ABC (stored without spaces)
+PLATE_RE = re.compile(r"^(\d{2})(?:[A-Z]\d{3}[A-Z]{2}|\d{3}[A-Z]{3})$")
+
+
+def normalize_plate(raw: str) -> str:
+    plate = re.sub(r"[\s|\-]", "", (raw or "").upper())
+    m = PLATE_RE.match(plate)
+    if not m or m.group(1) not in PLATE_REGIONS:
+        raise DomainError("invalid_plate")
+    return plate
+
+
 def _validate_vehicle(data: dict) -> dict:
     if data.get("vehicle_type") not in VehicleType.__members__:
         raise DomainError("invalid_vehicle")
     make_model = (data.get("make_model") or "").strip()
-    plate = (data.get("plate_number") or "").strip().upper().replace(" ", "")
+    plate = normalize_plate(data.get("plate_number") or "")
     seats = int(data.get("seats") or 0)
     weight = int(data.get("max_weight_kg") or 0)
-    if not make_model or not 4 <= len(plate) <= 12 or not 0 <= seats <= 60 or not 0 <= weight <= 40000:
+    if not make_model or not 0 <= seats <= 60 or not 0 <= weight <= 40000:
         raise DomainError("invalid_vehicle")
     if seats == 0 and weight == 0:
         raise DomainError("invalid_vehicle")

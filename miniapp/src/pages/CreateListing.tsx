@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { formatPlate } from "../components/plate";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { api } from "../api";
 import { ArrowRight, Truck } from "../components/icons";
 import {
+  AddressField,
   Chips,
   DateChips,
   EmptyState,
@@ -269,7 +271,7 @@ export default function CreateListing() {
                 <option value="">—</option>
                 {vehicles.data?.map((x) => (
                   <option key={x.id} value={x.id}>
-                    {x.make_model} · {x.plate_number}
+                    {x.make_model} · {formatPlate(x.plate_number)}
                   </option>
                 ))}
               </select>
@@ -355,12 +357,8 @@ export default function CreateListing() {
                 </div>
               </>
             )}
-            <Field label={t("l.from_address")}>
-              <input {...inp("from_address")} />
-            </Field>
-            <Field label={t("l.to_address")}>
-              <input {...inp("to_address")} />
-            </Field>
+            <AddressField label={t("l.from_address")} value={v.from_address} onChange={set("from_address")} />
+            <AddressField label={t("l.to_address")} value={v.to_address} onChange={set("to_address")} />
             <PrivateNote text={t("l.address_hidden")} />
           </>
         )}

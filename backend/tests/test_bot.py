@@ -5,7 +5,7 @@ from datetime import datetime
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.session.base import BaseSession
-from aiogram.methods import AnswerCallbackQuery, EditMessageReplyMarkup, SendMessage, TelegramMethod
+from aiogram.methods import AnswerCallbackQuery, EditMessageReplyMarkup, PinChatMessage, SendMessage, TelegramMethod
 from aiogram.types import Chat, Message, Update
 from conftest import make_carrier, make_user, passenger_request
 from sqlalchemy import select
@@ -101,6 +101,13 @@ async def test_registration_flow():
         u = (await s.execute(select(User).where(User.telegram_id == tg))).scalar_one()
         assert u.is_registered
     assert any("Главное меню" in t for t in session.texts())
+    guide = next(c for c in session.calls if isinstance(c, SendMessage) and "КАК РАБОТАЕТ" in c.text)
+    pin = next(c for c in session.calls if isinstance(c, PinChatMessage))
+    assert pin.chat_id == tg and pin.disable_notification is True
+    assert "{support}" not in guide.text
+
+    await feed(bot, dp, msg_update(tg, text="/help"))
+    assert "КАК РАБОТАЕТ" in session.texts()[-1]
 
 
 async def test_quick_action_confirms_order_and_reports_errors():

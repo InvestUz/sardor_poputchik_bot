@@ -1,4 +1,4 @@
-export type Loc = { id: number; name_uz: string; name_ru: string; region_uz: string; region_ru: string };
+export type Loc = { id: number; name_uz: string; name_ru: string; region_uz: string; region_ru: string; lat?: number | null; lon?: number | null };
 
 export type UserPublic = {
   id: number;

@@ -61,7 +61,8 @@ export default function Search() {
           onFrom={set("from_location_id")}
           onTo={set("to_location_id")}
           onSwap={swap}
-          placeholder={t("any")}
+          placeholder={t("city.any")}
+          optional
         />
         <div className="field">
           <span className="label">{t("date")}</span>

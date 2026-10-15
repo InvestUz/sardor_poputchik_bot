@@ -62,7 +62,8 @@ app.add_middleware(
     secret_key=settings.session_secret,
     session_cookie="admin_session",
     same_site="strict",
-    https_only=settings.public_url.startswith("https://"),
+    # dev (DEBUG=true): cookie also works over plain http://localhost; prod stays https-only
+    https_only=settings.public_url.startswith("https://") and not settings.debug and settings.admin_cookie_secure,
     max_age=12 * 3600,
 )
 

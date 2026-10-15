@@ -1,8 +1,9 @@
 import { useState } from "react";
+import { PlateView } from "../components/plate";
 import { useParams } from "react-router-dom";
 import { api, ApiError } from "../api";
 import { Chat, Check, Info, Lock, Phone } from "../components/icons";
-import { CarLine, EmptyState, ErrorBox, Field, IconCircle, Loading, PageHead, PersonLine, PrivateNote, RouteStops, Sheet, StatusText, Stars } from "../components/ui";
+import { AddressText, CarLine, EmptyState, ErrorBox, Field, IconCircle, Loading, PageHead, PersonLine, PrivateNote, RouteStops, Sheet, StatusText, Stars } from "../components/ui";
 import { dateTime, locName, money } from "../format";
 import { MainAction, SecondaryAction } from "../hooks";
 import { useApp, useLoad } from "../store";
@@ -241,14 +242,20 @@ export default function OrderDetail() {
             </span>
           </div>
           <div>
-            <span className="l">{plate ? t("o.plate") : t("l.vehicle")}</span>
-            <span className="v">{plate ?? o.vehicle?.make_model ?? "—"}</span>
+            <span className="l">{t("l.vehicle")}</span>
+            <span className="v">{o.vehicle?.make_model ?? "—"}</span>
           </div>
           <div>
             <span className="l">{passenger ? t("o.col_seats") : t("o.col_weight")}</span>
             <span className="v">{load}</span>
           </div>
         </div>
+        {plate && (
+          <div className="plate-row">
+            <span className="l">{t("o.plate")}</span>
+            <PlateView plate={plate} size="sm" />
+          </div>
+        )}
         {o.vehicle && !o.revealed && <CarLine v={o.vehicle} />}
         {o.revealed && (
           <dl className="specs">
@@ -271,13 +278,17 @@ export default function OrderDetail() {
             {o.from_address && (
               <div>
                 <dt>{t("l.from_address")}</dt>
-                <dd>{o.from_address}</dd>
+                <dd>
+                  <AddressText text={o.from_address} city={o.from?.name_uz} />
+                </dd>
               </div>
             )}
             {o.to_address && (
               <div>
                 <dt>{t("l.to_address")}</dt>
-                <dd>{o.to_address}</dd>
+                <dd>
+                  <AddressText text={o.to_address} city={o.to?.name_uz} />
+                </dd>
               </div>
             )}
             {o.recipient_name && (

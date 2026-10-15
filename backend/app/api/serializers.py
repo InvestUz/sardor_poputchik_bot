@@ -12,7 +12,7 @@ Stats = dict[int, dict] | None
 def location(loc: Location | None) -> dict | None:
     if loc is None:
         return None
-    return {"id": loc.id, "name_uz": loc.name_uz, "name_ru": loc.name_ru, "region_uz": loc.region_uz, "region_ru": loc.region_ru}
+    return {"id": loc.id, "name_uz": loc.name_uz, "name_ru": loc.name_ru, "region_uz": loc.region_uz, "region_ru": loc.region_ru, "lat": loc.lat, "lon": loc.lon}
 
 
 def user_public(u: User, stats: Stats = None) -> dict:

@@ -9,3 +9,6 @@ miniapp/dist/
 infra/.env
 *.dump
 *.tgz
+backend/.env.*
+!backend/.env.example
+miniapp/tsconfig.tsbuildinfo

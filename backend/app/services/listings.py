@@ -161,8 +161,8 @@ async def create(session: AsyncSession, user: User, data: dict) -> Listing:
 
     if kind == ListingKind.REQUEST:
         listing.capacity_total = 1
-        listing.from_address = _text(data, "from_address", 300, required=True)
-        listing.to_address = _text(data, "to_address", 300, required=True)
+        listing.from_address = _text(data, "from_address", 500, required=True)
+        listing.to_address = _text(data, "to_address", 500, required=True)
         if category == Category.PASSENGER:
             listing.details = passenger_details(data)
         else:

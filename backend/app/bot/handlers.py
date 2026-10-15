@@ -5,7 +5,7 @@ import logging
 
 from aiogram import F, Router
 from aiogram.exceptions import TelegramBadRequest
-from aiogram.filters import CommandStart
+from aiogram.filters import Command, CommandStart
 from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 
 from app.bot import keyboards as kb
@@ -115,6 +115,7 @@ async def on_terms(cb: CallbackQuery) -> None:
     except TelegramBadRequest:
         pass
     await cb.message.answer(t(user.lang, "reg.done"))
+    await send_guide(cb.message, user.lang, pin=True)
     await send_menu(cb.message, user.lang)
 
 
@@ -123,12 +124,24 @@ async def on_lang_menu(message: Message) -> None:
     await message.answer(t("uz", "lang.choose"), reply_markup=kb.language())
 
 
+@router.message(Command("help"))
 @router.message(F.text.in_(HELP_BUTTONS))
 async def on_help(message: Message) -> None:
     async with uow() as s:
         user, _ = await users.get_or_create(s, message.from_user.model_dump())
+    await send_guide(message, user.lang, pin=False)
+
+
+async def send_guide(message: Message, lang: str, pin: bool) -> None:
+    """'How it works' guide; pinned in the chat right after registration."""
+    async with uow() as s:
         support = await settings_svc.get(s, "support_contact")
-    await message.answer(t(user.lang, "help.text", support=support))
+    sent = await message.answer(t(lang, "guide.text", support=support), reply_markup=kb.open_app(lang))
+    if pin:
+        try:
+            await message.bot.pin_chat_message(message.chat.id, sent.message_id, disable_notification=True)
+        except TelegramBadRequest:
+            pass
 
 
 # ---------------------------------------------------------------- quick actions from notifications

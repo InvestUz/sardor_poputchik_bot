@@ -27,7 +27,7 @@ DEFAULTS: dict[str, Any] = {
     "max_active_listings": 10,
     "max_subscriptions": 10,
     "terms_version": "1",
-    "support_contact": "@support",
+    "support_contact": "@Sar1dor1",
     # price hint by distance (so'm per road km) when the route has too little history
     "price_per_km_passenger": 550,
     "price_per_km_parcel": 250,

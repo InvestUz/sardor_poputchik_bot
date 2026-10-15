@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { api, uploadFile } from "../api";
 import { Car, Check, Close, FileText, Plus, Truck } from "../components/icons";
+import { isValidPlate, PlateInput, PlateView } from "../components/plate";
 import { AuthImg, Badge, ErrorBox, Field, IconCircle, Loading, PageHead } from "../components/ui";
 import { useApp, useLoad } from "../store";
 import { haptic } from "../tg";
@@ -18,7 +19,6 @@ type Carrier = {
 const EDITABLE = ["DRAFT", "REJECTED", "RESUBMIT", "REVOKED"];
 const VEHICLE_LABELS = {
   make_model: "cr.make_model",
-  plate_number: "cr.plate",
   color: "cr.color",
   seats: "cr.seats",
   max_weight_kg: "cr.max_weight",
@@ -91,8 +91,9 @@ export default function CarrierSetup() {
             <span className="body">
               <span className="t">{v.make_model}</span>
               <span className="s">
-                {v.plate_number} · {t(`vt.${v.vehicle_type}`)} · {v.seats} / {v.max_weight_kg} {t("unit.kg")}
+                {t(`vt.${v.vehicle_type}`)} · {v.seats} / {v.max_weight_kg} {t("unit.kg")}
               </span>
+              <PlateView plate={v.plate_number} size="sm" />
             </span>
             <button className="icon-btn" onClick={() => act(() => api(`/carrier/vehicles/${v.id}`, { method: "DELETE" }))} aria-label={t("delete")}>
               <Close size={18} />
@@ -111,6 +112,9 @@ export default function CarrierSetup() {
               ))}
             </select>
           </Field>
+          <Field label={t("cr.plate")} group>
+            <PlateInput value={vehicle.plate_number} onChange={(p) => setVehicle({ ...vehicle, plate_number: p })} />
+          </Field>
           {(Object.keys(VEHICLE_LABELS) as (keyof typeof VEHICLE_LABELS)[]).map((k) => (
             <Field key={k} label={t(VEHICLE_LABELS[k])}>
               <input
@@ -123,7 +127,7 @@ export default function CarrierSetup() {
           <div className="actions">
             <button
               className="btn block"
-              disabled={busy}
+              disabled={busy || !isValidPlate(vehicle.plate_number)}
               onClick={() =>
                 act(async () => {
                   await api("/carrier/vehicles", {

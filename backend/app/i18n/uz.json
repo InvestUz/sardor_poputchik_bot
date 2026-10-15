@@ -14,7 +14,6 @@
   "blocked": "Akkauntingiz bloklangan. Sabab: {reason}\nMurojaat uchun: {support}",
   "lang.changed": "Til o'zgartirildi.",
   "act.done": "Bajarildi ✅",
-
   "btn.open_app": "📱 Ilovani ochish",
   "btn.open_profile": "👤 Profil",
   "btn.view": "🔎 Ko'rish",
@@ -27,13 +26,11 @@
   "btn.problem": "⚠️ Muammo bor",
   "btn.review": "⭐ Baho berish",
   "btn.start": "🚗 Yo'lga chiqdim",
-
   "cat.PASSENGER": "Yo'lovchi",
   "cat.DOCUMENTS": "Hujjat",
   "cat.PARCEL": "Posilka",
   "cat.FURNITURE": "Mebel",
   "cat.CARGO": "Katta yuk",
-
   "reason.PLANS_CHANGED": "rejalar o'zgardi",
   "reason.FOUND_OTHER": "boshqa variant topildi",
   "reason.PARTY_NO_RESPONSE": "ikkinchi tomon javob bermadi",
@@ -46,19 +43,16 @@
   "reason.DAMAGE_OR_LOSS": "shikastlanish yoki yo'qolish",
   "reason.PRICE_DISPUTE": "narx bo'yicha nizo",
   "reason.RUDE": "qo'pol muomala",
-
   "carrier.approved": "🎉 Tashuvchi sifatida tasdiqlandingiz! Ruxsat etilgan toifalar: {categories}.\nEndi marshrut joylashingiz va so'rovlarga taklif yuborishingiz mumkin.",
   "carrier.rejected": "Tashuvchi arizangiz rad etildi.\nSabab: {reason}",
   "carrier.resubmit_requested": "Hujjatlaringizni qayta yuklash so'raldi.\nIzoh: {reason}",
   "carrier.revoked": "Tashuvchi ruxsatingiz bekor qilindi.\nSabab: {reason}",
-
   "offer.new": "💬 Yangi taklif: {route}, {date}\nNarx: {price} so'm ({from_name})",
   "offer.countered": "↔️ Qarshi taklif: {route}, {date}\nYangi narx: {price} so'm",
   "offer.rejected": "Taklifingiz rad etildi: {route}, {date}",
   "offer.withdrawn": "Taklif qaytarib olindi: {route}, {date}",
   "offer.closed": "E'lon yopildi, taklifingiz endi faol emas: {route}, {date}",
   "offer.expired": "Taklif muddati tugadi: {route}, {date}",
-
   "order.awaiting_confirmation": "🔔 Mijoz sizning taklifingizni tanladi!\n{route}, {date}, {price} so'm.\n{minutes} daqiqa ichida tasdiqlang.",
   "order.waiting_carrier": "Tashuvchi tanlandi. Uning tasdig'i kutilmoqda: {route}, {date}, {price} so'm.",
   "order.confirmed": "✅ Buyurtma #{order_id} tasdiqlandi: {route}, {date}, {price} so'm.\nAniq manzil va telefonlar ilovada ochildi.",
@@ -71,13 +65,10 @@
   "order.confirm_timeout": "⌛ Buyurtma #{order_id} o'z vaqtida tasdiqlanmagani uchun bekor qilindi: {route}, {date}.",
   "order.reminder": "⏰ Eslatma: buyurtma #{order_id} — jo'nash {date}, {route}.",
   "order.delivery_code": "🔐 Buyurtma #{order_id} ({route}) — posilka topshirish kodi: {code}. Uni faqat qabul qiluvchiga ayting.",
-
   "listing.matching": "🆕 Yangi mos e'lon: {category}, {route}, {date}, {price} so'm.",
   "listing.cancelled_by_admin": "E'loningiz administrator tomonidan olib tashlandi: {route}, {date}.\nSabab: {reason}",
-
   "admin.verification_submitted": "🆕 Tashuvchi arizasi: {name} (user #{user_id}). Admin-panelda tekshiring.",
   "admin.complaint": "⚠️ Shikoyat #{complaint_id}, buyurtma #{order_id}, sabab: {reason}.",
-
   "err.generic": "Xatolik yuz berdi. Keyinroq urinib ko'ring.",
   "err.not_registered": "Avval ro'yxatdan o'ting: /start",
   "err.user_blocked": "Akkauntingiz bloklangan.",
@@ -92,5 +83,11 @@
   "err.listing_not_active": "E'lon endi faol emas.",
   "err.invalid_code": "Kod noto'g'ri. Qolgan urinishlar: {attempts_left}.",
   "err.code_locked": "Kod juda ko'p marta noto'g'ri kiritildi. Muammoni shikoyat orqali hal qiling.",
-  "err.code_required": "Topshirish uchun qabul qiluvchidan olingan kodni ilovada kiriting."
+  "err.code_required": "Topshirish uchun qabul qiluvchidan olingan kodni ilovada kiriting.",
+  "guide.text": "📌 YO'LCHI QANDAY ISHLAYDI\n\n🧍 YO'LOVCHI / MIJOZ\n1. Pastdagi «Ilova» tugmasini bosing.\n2. «Yo'l topish» — tayyor marshrutlardan tanlang yoki «E'lon berish» orqali yo'nalish, vaqt va o'z narxingizni yozing.\n3. Haydovchilar taklif yuboradi: narx, reyting va «Tasdiqlangan» belgisiga qarab birini tanlang. Narxni kelishish uchun qarshi narx yuborishingiz mumkin.\n4. Kelishilgach telefon raqam va aniq manzil ochiladi. To'lov — haydovchiga to'g'ridan-to'g'ri (naqd yoki karta).\n5. Safardan keyin «Hammasi joyida» ni bosing va baho qoldiring.\n\n📦 POSILKA\n«Posilka yuborish»: foto, og'irlik, o'lcham va qabul qiluvchini kiriting. Buyurtma tasdiqlangach sizga 4 xonali kod keladi — uni faqat qabul qiluvchiga ayting. Haydovchi posilkani topshirganda shu kodni kiritadi.\n\n🚗 HAYDOVCHI\nIlova → «Tashuvchi bo'lish»: mashina ma'lumoti, haydovchilik guvohnomasi, texpasport va mashina fotosini yuklang. Tekshiruvdan o'tgach marshrut joylaysiz va mijozlar so'rovlariga taklif yuborasiz.\n\n🔒 Xavfsizlik: telefon va manzil faqat kelishuvdan keyin ochiladi. Muammo bo'lsa — buyurtma ichida «Muammo / shikoyat».\n\nYordam: {support}",
+  "bot.description": "Shaharlararo yo'l va posilka. Tekshirilgan haydovchilar, narxni o'zingiz taklif qilasiz, telefon va manzil faqat kelishuvdan keyin ochiladi.\n\nBoshlash uchun «Start» ni bosing: til → telefon raqam → tayyor.",
+  "bot.short_description": "Shaharlararo yo'l va posilka: o'z narxingizni taklif qiling, tekshirilgan haydovchilar.",
+  "cmd.start": "Boshlash / menyu",
+  "cmd.help": "Qanday ishlaydi",
+  "err.invalid_plate": "Davlat raqami noto'g'ri. Namuna: 01 A 123 BC (jismoniy shaxs) yoki 01 123 ABC (yuridik shaxs)."
 }

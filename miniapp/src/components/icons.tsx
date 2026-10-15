@@ -137,6 +137,13 @@ export const Pin = (p: P) => (
     <circle cx="12" cy="10" r="2.3" />
   </Svg>
 );
+export const Locate = (p: P) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="6.5" />
+    <circle cx="12" cy="12" r="2.2" />
+    <path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3" />
+  </Svg>
+);
 export const Bell = (p: P) => (
   <Svg {...p}>
     <path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15Z" />

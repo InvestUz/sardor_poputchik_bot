@@ -319,3 +319,15 @@ async def test_admin_order_page_shows_delivery_code(client):
     await client.post("/admin/login", data={"csrf": csrf, "username": name, "password": "secret123"})
     html = (await client.get(f"/admin/orders/{order_id}")).text
     assert "Topshirish kodi" in html and f"<b>{code}</b>" in html and "0 / 5" in html
+
+
+def test_plate_formats():
+    from app.services.carriers import normalize_plate
+
+    assert normalize_plate("01 a 123 bc") == "01A123BC"
+    assert normalize_plate("01|123|ABC") == "01123ABC"
+    assert normalize_plate("95 777 AAA") == "95777AAA"
+    for bad in ("", "01A12BC", "99A123BC", "01 1234 AB", "AA A 123 BC", "01A123B1"):
+        with pytest.raises(DomainError) as e:
+            normalize_plate(bad)
+        assert e.value.code == "invalid_plate", bad

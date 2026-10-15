@@ -107,8 +107,8 @@ async def create(session: AsyncSession, user: User, listing_id: int, data: dict)
             raise DomainError("no_capacity")
     else:
         # a client books space on a carrier's route
-        offer.from_address = listings._text(data, "from_address", 300, required=True)
-        offer.to_address = listings._text(data, "to_address", 300, required=True)
+        offer.from_address = listings._text(data, "from_address", 500, required=True)
+        offer.to_address = listings._text(data, "to_address", 500, required=True)
         if listing.category == Category.PASSENGER:
             details = listings.passenger_details(data)
             offer.quantity = details["passengers"]
