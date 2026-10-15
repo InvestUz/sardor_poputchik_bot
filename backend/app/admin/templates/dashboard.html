@@ -1,0 +1,19 @@
+{% extends "base.html" %}{% block title %}Statistika{% endblock %}
+{% block content %}
+<h2>Statistika</h2>
+<div class="grid">
+<div class="card stat"><span class="muted">Foydalanuvchilar</span><b>{{ s.users }}</b><span class="muted">ro'yxatdan o'tgan: {{ s.users_registered }}</span></div>
+<div class="card stat"><span class="muted">Tasdiqlangan tashuvchilar</span><b>{{ s.carriers_approved }}</b><a href="/admin/verifications">kutmoqda: {{ s.carriers_pending }}</a></div>
+<div class="card stat"><span class="muted">Faol e'lonlar</span><b>{{ s.listings_active }}</b><span class="muted">jami: {{ s.listings_total }}</span></div>
+<div class="card stat"><span class="muted">Takliflar</span><b>{{ s.offers_total }}</b></div>
+<div class="card stat"><span class="muted">Buyurtmalar</span><b>{{ s.orders_total }}</b><span class="muted">yakunlangan: {{ s.orders_by_status.get('COMPLETED', 0) }}</span></div>
+<div class="card stat"><span class="muted">Ochiq shikoyatlar</span><b>{{ s.complaints_open }}</b><a href="/admin/complaints">ko'rish</a></div>
+<div class="card stat"><span class="muted">Yakunlangan buyurtmalar summasi</span><b>{{ s.gmv_completed|money }}</b><span class="muted">so'm</span></div>
+<div class="card stat"><span class="muted">Hisoblangan komissiya (yechilmaydi)</span><b>{{ s.commission_estimated|money }}</b><span class="muted">so'm</span></div>
+</div>
+<div class="row">
+<div class="card"><h3>Buyurtmalar holati bo'yicha</h3><table>{% for st, n in s.orders_by_status.items() %}<tr><td><span class="badge b-{{ st }}">{{ st }}</span></td><td>{{ n }}</td></tr>{% else %}<tr><td class="muted">Hozircha yo'q</td></tr>{% endfor %}</table></div>
+<div class="card"><h3>Toifalar bo'yicha (yakunlangan)</h3><table>{% for r in s.by_category %}<tr><td>{{ cat(r.category) }}</td><td>{{ r.orders }}</td><td>{{ r.gmv|money }} so'm</td></tr>{% else %}<tr><td class="muted">Hozircha yo'q</td></tr>{% endfor %}</table></div>
+<div class="card"><h3>Top yo'nalishlar (e'lonlar)</h3><table>{% for r in s.top_routes %}<tr><td>{{ r.route }}</td><td>{{ r.listings }}</td></tr>{% else %}<tr><td class="muted">Hozircha yo'q</td></tr>{% endfor %}</table></div>
+</div>
+{% endblock %}

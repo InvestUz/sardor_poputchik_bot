@@ -1,0 +1,12 @@
+**/node_modules
+**/.venv
+**/__pycache__
+**/.pytest_cache
+miniapp/dist
+backend/data
+backend/.env
+backend/tests
+infra/.env
+.git
+.claude
+docs

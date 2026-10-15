@@ -1,0 +1,13 @@
+{% extends "base.html" %}{% block title %}Tekshiruv{% endblock %}
+{% block content %}
+<h2>Tashuvchilarni tekshirish</h2>
+<div class="filters">{% for st in statuses %}<a href="?status={{ st }}" class="badge b-{{ st }}" {% if st == status %}style="outline:2px solid #111"{% endif %}>{{ st }}</a>{% endfor %}</div>
+<div class="scroll"><table>
+<tr><th>#</th><th>Ism (hujjat bo'yicha)</th><th>Telegram</th><th>Telefon</th><th>Yuborilgan</th><th>Holat</th></tr>
+{% for p in rows %}
+<tr><td><a href="/admin/verifications/{{ p.id }}">{{ p.id }}</a></td><td><a href="/admin/verifications/{{ p.id }}">{{ p.full_name or '—' }}</a></td>
+<td>{{ p.user.first_name }} {% if p.user.username %}@{{ p.user.username }}{% endif %}</td><td>{{ p.user.phone }}</td>
+<td>{{ p.submitted_at|dt }}</td><td><span class="badge b-{{ p.status }}">{{ p.status }}</span></td></tr>
+{% else %}<tr><td colspan="6" class="muted">Bo'sh</td></tr>{% endfor %}
+</table></div>
+{% endblock %}

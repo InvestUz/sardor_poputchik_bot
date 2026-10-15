@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% block title %}Audit{% endblock %}
+{% block content %}
+<h2>Audit jurnali</h2>
+<div class="scroll"><table>
+<tr><th>Vaqt</th><th>Kim</th><th>Amal</th><th>Obyekt</th><th>Ma'lumot</th></tr>
+{% for r in rows %}<tr><td>{{ r.created_at|dt }}</td><td>{{ r.actor_type }} {{ r.actor_name or '' }}</td><td>{{ r.action }}</td><td>{{ r.entity }} #{{ r.entity_id or '' }}</td><td><code>{{ r.data }}</code></td></tr>
+{% else %}<tr><td colspan="5" class="muted">Bo'sh</td></tr>{% endfor %}
+</table></div>
+<p>{% if page > 0 %}<a href="?page={{ page - 1 }}">← Oldingi</a>{% endif %} {% if rows|length == 50 %}<a href="?page={{ page + 1 }}">Keyingi →</a>{% endif %}</p>
+{% endblock %}

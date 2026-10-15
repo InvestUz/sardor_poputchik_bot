@@ -1,0 +1,30 @@
+{% extends "base.html" %}{% block title %}E'lon #{{ l.id }}{% endblock %}
+{% block content %}
+<p><a href="/admin/listings">← Ro'yxat</a></p>
+<h2>E'lon #{{ l.id }} <span class="badge b-{{ l.status }}">{{ l.status }}</span></h2>
+<div class="row">
+<div class="card"><dl>
+<dt>Turi</dt><dd>{{ "Mijoz so'rovi" if l.kind == 'REQUEST' else "Tashuvchi marshruti" }} · {{ cat(l.category) }}</dd>
+<dt>Yo'nalish</dt><dd>{{ l.from_location.name_uz }} → {{ l.to_location.name_uz }}</dd>
+<dt>Jo'nash</dt><dd>{{ l.departure_at|dt }}{% if l.time_flexible %} (vaqt moslashuvchan){% endif %}</dd>
+<dt>Narx</dt><dd>{{ l.price|money }} so'm</dd><dt>Sig'im</dt><dd>{{ l.capacity_reserved }}/{{ l.capacity_total }}</dd>
+<dt>Muallif</dt><dd><a href="/admin/users/{{ l.author.id }}">{{ l.author.display_name }}</a> · {{ l.author.phone }}</dd>
+<dt>Transport</dt><dd>{% if l.vehicle %}{{ l.vehicle.make_model }} · {{ l.vehicle.plate_number }}{% else %}—{% endif %}</dd>
+<dt>Tafsilotlar</dt><dd>{% for k, v in l.details.items() %}{{ k }}: {{ v }}<br>{% endfor %}</dd>
+<dt>Manzillar</dt><dd>{{ l.from_address or '—' }} → {{ l.to_address or '—' }}</dd>
+<dt>Qabul qiluvchi</dt><dd>{{ l.recipient_name or '—' }} {{ l.recipient_phone or '' }}</dd>
+<dt>Izoh</dt><dd>{{ l.comment or '—' }}</dd><dt>Yaratilgan</dt><dd>{{ l.created_at|dt }}</dd>
+</dl>
+<div class="thumbs">{% for p in l.photos %}<a href="/admin/files/{{ p.file_id }}" target="_blank"><img src="/admin/files/{{ p.file_id }}" alt="photo"></a>{% endfor %}</div>
+</div>
+{% if l.status == 'PUBLISHED' %}
+<div class="card"><h3>Moderatsiya: e'lonni olib tashlash</h3>
+<form method="post" action="/admin/listings/{{ l.id }}/cancel"><input type="hidden" name="csrf" value="{{ csrf }}"><textarea name="reason" required placeholder="Sabab (muallifga yuboriladi)"></textarea><p><button class="danger">Olib tashlash</button></p></form></div>
+{% endif %}
+</div>
+<div class="card"><h3>Takliflar</h3><div class="scroll"><table>
+<tr><th>#</th><th>Kontragent</th><th>Taklif qilgan</th><th>Narx</th><th>Miqdor</th><th>Holat</th><th>Vaqt</th></tr>
+{% for o in offers %}<tr><td>{{ o.id }}{% if o.parent_id %} ← {{ o.parent_id }}{% endif %}</td><td>{{ o.counterparty.display_name }}</td><td>{{ 'muallif' if o.proposed_by_id == l.author_id else 'kontragent' }}</td><td>{{ o.price|money }}</td><td>{{ o.quantity }}</td><td><span class="badge b-{{ o.status }}">{{ o.status }}</span></td><td>{{ o.created_at|dt }}</td></tr>{% else %}<tr><td class="muted" colspan="7">Yo'q</td></tr>{% endfor %}
+</table></div></div>
+<div class="card"><h3>Buyurtmalar</h3><table>{% for o in orders %}<tr><td><a href="/admin/orders/{{ o.id }}">#{{ o.id }}</a></td><td>{{ o.price|money }}</td><td><span class="badge b-{{ o.status }}">{{ o.status }}</span></td></tr>{% else %}<tr><td class="muted">Yo'q</td></tr>{% endfor %}</table></div>
+{% endblock %}

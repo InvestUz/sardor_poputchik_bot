@@ -1,0 +1,27 @@
+{% extends "base.html" %}{% block title %}{{ u.display_name }}{% endblock %}
+{% block content %}
+<p><a href="/admin/users">← Ro'yxat</a></p>
+<h2>#{{ u.id }} {{ u.display_name }} {% if u.is_blocked %}<span class="badge b-CANCELLED">bloklangan</span>{% endif %}</h2>
+<div class="row">
+<div class="card"><dl>
+<dt>Telegram ID</dt><dd>{{ u.telegram_id }} {% if u.username %}(@{{ u.username }}){% endif %}</dd>
+<dt>Telefon</dt><dd>{{ u.phone or '—' }}</dd><dt>Til</dt><dd>{{ u.lang }}</dd>
+<dt>Oferta</dt><dd>v{{ u.terms_version or '—' }} · {{ u.terms_accepted_at|dt }}</dd>
+<dt>Reyting</dt><dd>{{ u.rating or '—' }} ({{ u.rating_count }} ta baho)</dd>
+<dt>Bekor qilishlar</dt><dd>{{ u.cancel_count }} (kech: {{ u.late_cancel_count }})</dd>
+<dt>Shikoyatlar (buyurtmalarida)</dt><dd>{{ complaints_n }}</dd>
+<dt>Tashuvchi</dt><dd>{% if profile %}<a href="/admin/verifications/{{ profile.id }}"><span class="badge b-{{ profile.status }}">{{ profile.status }}</span></a>{% else %}—{% endif %}</dd>
+<dt>Bot</dt><dd>{% if u.bot_blocked %}botni bloklagan{% else %}faol{% endif %}</dd>
+{% if u.is_blocked %}<dt>Bloklash sababi</dt><dd>{{ u.block_reason }}</dd>{% endif %}
+</dl></div>
+<div class="card">{% if u.is_blocked %}
+<form method="post" action="/admin/users/{{ u.id }}/unblock"><input type="hidden" name="csrf" value="{{ csrf }}"><button>Blokdan chiqarish</button></form>
+{% else %}
+<form method="post" action="/admin/users/{{ u.id }}/block"><input type="hidden" name="csrf" value="{{ csrf }}"><h3>Bloklash</h3><textarea name="reason" required placeholder="Sabab (foydalanuvchiga ko'rsatiladi)"></textarea><p><button class="danger">Bloklash</button></p></form>
+{% endif %}</div>
+</div>
+<div class="row">
+<div class="card"><h3>E'lonlar</h3><table>{% for l in listings %}<tr><td><a href="/admin/listings/{{ l.id }}">#{{ l.id }}</a></td><td>{{ l.kind }} · {{ cat(l.category) }}</td><td>{{ l.from_location.name_uz }} → {{ l.to_location.name_uz }}</td><td><span class="badge b-{{ l.status }}">{{ l.status }}</span></td></tr>{% else %}<tr><td class="muted">Yo'q</td></tr>{% endfor %}</table></div>
+<div class="card"><h3>Buyurtmalar</h3><table>{% for o in orders %}<tr><td><a href="/admin/orders/{{ o.id }}">#{{ o.id }}</a></td><td>{% if o.client_id == u.id %}mijoz{% else %}tashuvchi{% endif %}</td><td>{{ o.from_location.name_uz }} → {{ o.to_location.name_uz }}</td><td><span class="badge b-{{ o.status }}">{{ o.status }}</span></td></tr>{% else %}<tr><td class="muted">Yo'q</td></tr>{% endfor %}</table></div>
+</div>
+{% endblock %}

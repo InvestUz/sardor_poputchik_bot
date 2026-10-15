@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}Admin{% endblock %} · Yo'lchi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&family=Manrope:wght@500;600;700&family=Unbounded:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f1f0eb;--card:#f8f7f3;--text:#0e0e0d;--muted:#8b8a84;--line:rgba(14,14,13,.12);--line2:rgba(14,14,13,.28);--accent:#a6e22e;--accent-ink:#4b7a0c;--danger:#d2421f;
+--f-d:"Unbounded",system-ui,sans-serif;--f-b:"Manrope",system-ui,sans-serif;--f-m:"JetBrains Mono",ui-monospace,monospace}
+*{box-sizing:border-box}body{margin:0;font:500 14px/1.5 var(--f-b);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+header{position:sticky;top:0;z-index:5;background:#0e0e0d;color:#f1f0eb;padding:0 20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+header b{padding:14px 0;font-family:var(--f-d);font-weight:700;letter-spacing:-.05em;font-size:18px}header b::after{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-left:3px}
+header nav{display:flex;gap:2px;flex-wrap:nowrap;overflow-x:auto;flex:1;scrollbar-width:none}header nav a{white-space:nowrap}
+header nav a{color:#9d9c96;text-decoration:none;padding:16px 10px;font-family:var(--f-m);font-size:11px;letter-spacing:.12em;text-transform:uppercase;border-bottom:2px solid transparent}
+header nav a.on,header nav a:hover{color:#f1f0eb;border-color:var(--accent)}
+main{max-width:1240px;margin:0 auto;padding:28px 20px 60px}
+h2{font-family:var(--f-d);font-weight:600;letter-spacing:-.045em;font-size:32px;line-height:1;margin:6px 0 22px}
+h3{font-family:var(--f-m);font-weight:600;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;margin-bottom:16px}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-m);font-weight:500;color:var(--muted);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase}
+a{color:var(--text);text-underline-offset:3px}.muted{color:var(--muted)}
+.flash{background:#0e0e0d;color:#f1f0eb;padding:12px 16px;border-radius:999px;margin-bottom:18px;display:inline-block}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-family:var(--f-m);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--line2);color:#3b3b38;text-decoration:none;background:transparent}
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--muted)}
+.b-PUBLISHED::before,.b-APPROVED::before,.b-COMPLETED::before,.b-CONFIRMED::before,.b-RESOLVED::before{background:#3f7d14}
+.b-PENDING::before,.b-AWAITING_CONFIRMATION::before,.b-AWAITING_COMPLETION::before,.b-IN_PROGRESS::before,.b-RESUBMIT::before{background:#b7791f}
+.b-CANCELLED::before,.b-REJECTED::before,.b-REVOKED::before,.b-DISPUTED::before,.b-OPEN::before,.b-EXPIRED::before{background:var(--danger)}
+input,select,textarea{font:600 14px var(--f-b);color:var(--text);padding:9px 2px;border:0;border-bottom:1.5px solid var(--line2);background:transparent;max-width:100%;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--text)}textarea{width:100%;min-height:64px}
+button{font:700 14px var(--f-b);padding:10px 20px;border-radius:999px;border:1px solid #0e0e0d;background:#0e0e0d;color:#f1f0eb;cursor:pointer}
+button.danger{background:var(--danger);border-color:var(--danger)}button.ghost{background:transparent;color:inherit;border-color:var(--line2)}
+header button.ghost{color:#f1f0eb;border-color:#3b3b38;padding:6px 14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.stat span{font-family:var(--f-m);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase}
+.stat b{display:block;font-family:var(--f-d);font-weight:600;letter-spacing:-.05em;font-size:34px;margin:8px 0 4px}
+.row{display:flex;gap:16px;flex-wrap:wrap}.row>*{flex:1;min-width:280px}form.inline{display:inline}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+dl{display:grid;grid-template-columns:max-content 1fr;gap:8px 18px;margin:0}dt{color:var(--muted);font-family:var(--f-m);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding-top:2px}dd{margin:0;font-weight:600}
+.thumbs img{max-width:220px;max-height:220px;border-radius:14px;margin:4px}
+.scroll{overflow-x:auto}
+</style>
+</head>
+<body>
+{% if admin %}
+<header>
+  <b>Yo'lchi · Admin</b>
+  <nav>{% for key, url, label in nav %}<a href="{{ url }}" {% if request.url.path == url or (url != '/admin/' and request.url.path.startswith(url)) %}class="on"{% endif %}>{{ label }}</a>{% endfor %}</nav>
+  <form class="inline" method="post" action="/admin/logout"><input type="hidden" name="csrf" value="{{ csrf }}"><span class="muted">{{ admin.username }} ({{ admin.role }})</span> <button class="ghost">Chiqish</button></form>
+</header>
+{% endif %}
+<main>
+{% if flash %}<div class="flash">{{ flash }}</div>{% endif %}
+{% block content %}{% endblock %}
+</main>
+</body>
+</html>

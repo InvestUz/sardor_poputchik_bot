@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% block title %}E'lonlar{% endblock %}
+{% block content %}
+<h2>E'lonlar</h2>
+<div class="filters"><a href="?status=" class="badge">barchasi</a>{% for st in statuses %}<a href="?status={{ st }}" class="badge b-{{ st }}" {% if st == status %}style="outline:2px solid #111"{% endif %}>{{ st }}</a>{% endfor %}</div>
+<div class="scroll"><table>
+<tr><th>#</th><th>Turi</th><th>Yo'nalish</th><th>Jo'nash</th><th>Narx</th><th>Sig'im</th><th>Muallif</th><th>Holat</th></tr>
+{% for l in rows %}
+<tr><td><a href="/admin/listings/{{ l.id }}">{{ l.id }}</a></td><td>{{ "So'rov" if l.kind == 'REQUEST' else "Marshrut" }} · {{ cat(l.category) }}</td>
+<td>{{ l.from_location.name_uz }} → {{ l.to_location.name_uz }}</td><td>{{ l.departure_at|dt }}</td><td>{{ l.price|money }}</td>
+<td>{{ l.capacity_reserved }}/{{ l.capacity_total }}</td><td><a href="/admin/users/{{ l.author.id }}">{{ l.author.display_name }}</a></td><td><span class="badge b-{{ l.status }}">{{ l.status }}</span></td></tr>
+{% else %}<tr><td colspan="8" class="muted">Bo'sh</td></tr>{% endfor %}
+</table></div>
+<p>{% if page > 0 %}<a href="?status={{ status }}&page={{ page - 1 }}">← Oldingi</a>{% endif %} {% if rows|length == 50 %}<a href="?status={{ status }}&page={{ page + 1 }}">Keyingi →</a>{% endif %}</p>
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% block title %}Sozlamalar{% endblock %}
+{% block content %}
+<h2>Sozlamalar</h2>
+<div class="card"><form method="post" action="/admin/settings"><input type="hidden" name="csrf" value="{{ csrf }}">
+<table>{% for key, label in labels.items() %}<tr><td><label for="{{ key }}">{{ label }}</label><br><span class="muted">{{ key }}</span></td><td><input id="{{ key }}" name="{{ key }}" value="{{ values[key] }}" size="40"></td></tr>{% endfor %}</table>
+<p class="muted">Toifalar: PASSENGER, DOCUMENTS, PARCEL, FURNITURE, CARGO. Hujjatlar: DRIVER_LICENSE, TECH_PASSPORT, VEHICLE_PHOTO, ID_CARD, OTHER.<br>Har bir o'zgarish audit jurnaliga yoziladi. Komissiya o'zgarishi allaqachon yaratilgan buyurtmalarga ta'sir qilmaydi.</p>
+<button>Saqlash</button></form></div>
+{% endblock %}

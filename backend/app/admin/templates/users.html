@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% block title %}Foydalanuvchilar{% endblock %}
+{% block content %}
+<h2>Foydalanuvchilar</h2>
+<form class="filters"><input name="q" value="{{ q }}" placeholder="Telefon, ism, @username, ID"><button>Qidirish</button></form>
+<div class="scroll"><table>
+<tr><th>#</th><th>Ism</th><th>Telefon</th><th>Til</th><th>Reyting</th><th>Bekor qilishlar</th><th>Holat</th><th>Ro'yxatdan</th></tr>
+{% for u in rows %}
+<tr><td><a href="/admin/users/{{ u.id }}">{{ u.id }}</a></td><td><a href="/admin/users/{{ u.id }}">{{ u.display_name }}</a>{% if u.username %} <span class="muted">@{{ u.username }}</span>{% endif %}</td>
+<td>{{ u.phone or '—' }}</td><td>{{ u.lang }}</td><td>{{ u.rating or '—' }} ({{ u.rating_count }})</td><td>{{ u.cancel_count }} / kech: {{ u.late_cancel_count }}</td>
+<td>{% if u.is_blocked %}<span class="badge b-CANCELLED">bloklangan</span>{% elif not u.is_registered %}<span class="badge">ro'yxatdan o'tmagan</span>{% else %}<span class="badge b-APPROVED">faol</span>{% endif %}</td>
+<td>{{ u.created_at|dt }}</td></tr>
+{% else %}<tr><td colspan="8" class="muted">Topilmadi</td></tr>{% endfor %}
+</table></div>
+<p>{% if page > 0 %}<a href="?q={{ q }}&page={{ page - 1 }}">← Oldingi</a>{% endif %} {% if rows|length == 50 %}<a href="?q={{ q }}&page={{ page + 1 }}">Keyingi →</a>{% endif %}</p>
+{% endblock %}

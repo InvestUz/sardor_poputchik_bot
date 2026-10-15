@@ -1,0 +1,13 @@
+{% extends "base.html" %}{% block title %}Buyurtmalar{% endblock %}
+{% block content %}
+<h2>Buyurtmalar</h2>
+<form class="filters"><select name="status"><option value="">barcha holatlar</option>{% for st in statuses %}<option {% if st == status %}selected{% endif %}>{{ st }}</option>{% endfor %}</select><input name="q" value="{{ q }}" placeholder="Buyurtma #"><button>Filtr</button></form>
+<div class="scroll"><table>
+<tr><th>#</th><th>Toifa</th><th>Yo'nalish</th><th>Jo'nash</th><th>Narx</th><th>Mijoz</th><th>Tashuvchi</th><th>Holat</th></tr>
+{% for o in rows %}
+<tr><td><a href="/admin/orders/{{ o.id }}">{{ o.id }}</a></td><td>{{ cat(o.category) }}</td><td>{{ o.from_location.name_uz }} → {{ o.to_location.name_uz }}</td><td>{{ o.departure_at|dt }}</td><td>{{ o.price|money }}</td>
+<td><a href="/admin/users/{{ o.client.id }}">{{ o.client.display_name }}</a></td><td><a href="/admin/users/{{ o.carrier.id }}">{{ o.carrier.display_name }}</a></td><td><span class="badge b-{{ o.status }}">{{ o.status }}</span></td></tr>
+{% else %}<tr><td colspan="8" class="muted">Bo'sh</td></tr>{% endfor %}
+</table></div>
+<p>{% if page > 0 %}<a href="?status={{ status }}&page={{ page - 1 }}">← Oldingi</a>{% endif %} {% if rows|length == 50 %}<a href="?status={{ status }}&page={{ page + 1 }}">Keyingi →</a>{% endif %}</p>
+{% endblock %}

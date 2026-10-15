@@ -1,0 +1,36 @@
+{% extends "base.html" %}{% block title %}Buyurtma #{{ o.id }}{% endblock %}
+{% block content %}
+<p><a href="/admin/orders">← Ro'yxat</a></p>
+<h2>Buyurtma #{{ o.id }} <span class="badge b-{{ o.status }}">{{ o.status }}</span></h2>
+<div class="row">
+<div class="card"><dl>
+<dt>Toifa</dt><dd>{{ cat(o.category) }}</dd><dt>Yo'nalish</dt><dd>{{ o.from_location.name_uz }} → {{ o.to_location.name_uz }}</dd>
+<dt>Jo'nash</dt><dd>{{ o.departure_at|dt }}</dd><dt>Narx</dt><dd>{{ o.price|money }} so'm (miqdor: {{ o.quantity }})</dd>
+<dt>Komissiya</dt><dd>{{ o.commission_percent }}% = {{ o.estimated_commission|money }} so'm (pilotda yechilmaydi)</dd>
+<dt>Mijoz</dt><dd><a href="/admin/users/{{ o.client.id }}">{{ o.client.display_name }}</a> · {{ o.client.phone }}</dd>
+<dt>Tashuvchi</dt><dd><a href="/admin/users/{{ o.carrier.id }}">{{ o.carrier.display_name }}</a> · {{ o.carrier.phone }}</dd>
+<dt>Transport</dt><dd>{% if o.vehicle %}{{ o.vehicle.make_model }} · {{ o.vehicle.plate_number }}{% else %}—{% endif %}</dd>
+<dt>Manzillar</dt><dd>{{ o.from_address or '—' }} → {{ o.to_address or '—' }}</dd>
+<dt>Qabul qiluvchi</dt><dd>{{ o.recipient_name or '—' }} {{ o.recipient_phone or '' }}</dd>
+{% if o.delivery_code %}<dt>Topshirish kodi</dt><dd><b>{{ o.delivery_code }}</b> · noto'g'ri urinishlar: {{ o.delivery_code_attempts }} / {{ code_max_attempts }}{% if o.delivery_code_attempts >= code_max_attempts %} <span class="badge b-DISPUTED">bloklangan</span>{% endif %}</dd>{% endif %}
+<dt>Tafsilotlar</dt><dd>{% for k, v in o.details.items() %}{{ k }}: {{ v }}<br>{% endfor %}</dd>
+<dt>E'lon</dt><dd><a href="/admin/listings/{{ o.listing_id }}">#{{ o.listing_id }}</a></dd>
+</dl></div>
+<div class="card"><h3>Holatlar tarixi</h3><table>{% for h in history %}<tr><td>{{ h.created_at|dt }}</td><td>{{ h.from_status or '—' }} → <b>{{ h.to_status }}</b></td><td class="muted">{{ h.actor_type }}{% if h.actor_id %} #{{ h.actor_id }}{% endif %}{% if h.reason %} · {{ h.reason }}{% endif %}</td></tr>{% endfor %}</table>
+<h3>Narx kelishuvi</h3><table>{% for of in offer_chain %}<tr><td>#{{ of.id }}</td><td>{{ of.price|money }} so'm</td><td class="muted">{{ 'mijoz' if of.proposed_by_id == o.client_id else 'tashuvchi' }}</td><td>{{ of.created_at|dt }}</td></tr>{% endfor %}</table></div>
+</div>
+{% for c in complaints %}
+<div class="card"><h3>Shikoyat #{{ c.id }} <span class="badge b-{{ c.status }}">{{ c.status }}</span></h3>
+<dl><dt>Muallif</dt><dd>{{ c.author.display_name }} ({{ 'mijoz' if c.author_id == o.client_id else 'tashuvchi' }})</dd><dt>Sabab</dt><dd>{{ reason(c.reason_code) }}</dd><dt>Matn</dt><dd>{{ c.text or '—' }}</dd><dt>Vaqt</dt><dd>{{ c.created_at|dt }}</dd>
+{% if c.status == 'RESOLVED' %}<dt>Qaror</dt><dd>{{ c.outcome }} — {{ c.resolution }} ({{ c.resolved_at|dt }})</dd>{% endif %}</dl>
+{% if c.status == 'OPEN' %}
+<form method="post" action="/admin/complaints/{{ c.id }}/resolve"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="order_id" value="{{ o.id }}">
+<p><select name="outcome"><option value="COMPLETED">Buyurtma bajarilgan deb yopish</option><option value="CANCELLED">Buyurtmani bekor qilish</option></select></p>
+<textarea name="resolution" required placeholder="Qaror matni (ikkala tomonga yuboriladi)"></textarea><p><button>Qarorni saqlash</button></p></form>
+{% endif %}</div>
+{% endfor %}
+<div class="row">
+<div class="card"><h3>Bekor qilishlar</h3><table>{% for c in cancellations %}<tr><td>{{ c.created_at|dt }}</td><td>{{ c.initiator_role }}</td><td>{{ reason(c.reason_code) }}</td><td>{{ c.reason_text or '' }}</td><td class="muted">{{ c.status_at_cancel }}, jo'nashgacha {{ c.hours_before_departure }} soat</td></tr>{% else %}<tr><td class="muted">Yo'q</td></tr>{% endfor %}</table></div>
+<div class="card"><h3>Baholar</h3><table>{% for r in reviews %}<tr><td>{{ '★' * r.rating }}</td><td>{{ 'mijoz → tashuvchi' if r.author_id == o.client_id else 'tashuvchi → mijoz' }}</td><td>{{ r.text or '' }}</td></tr>{% else %}<tr><td class="muted">Yo'q</td></tr>{% endfor %}</table></div>
+</div>
+{% endblock %}

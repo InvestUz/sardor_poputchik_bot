@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% block title %}Shikoyatlar{% endblock %}
+{% block content %}
+<h2>Shikoyatlar</h2>
+<div class="filters"><a class="badge b-OPEN" href="?status=OPEN">Ochiq</a><a class="badge b-RESOLVED" href="?status=RESOLVED">Hal qilingan</a></div>
+<div class="scroll"><table>
+<tr><th>#</th><th>Buyurtma</th><th>Muallif</th><th>Sabab</th><th>Matn</th><th>Vaqt</th><th>Holat</th></tr>
+{% for c in rows %}
+<tr><td>{{ c.id }}</td><td><a href="/admin/orders/{{ c.order_id }}">#{{ c.order_id }}</a></td><td>{{ c.author.display_name }}</td><td>{{ reason(c.reason_code) }}</td><td>{{ (c.text or '')[:120] }}</td><td>{{ c.created_at|dt }}</td><td><span class="badge b-{{ c.status }}">{{ c.status }}</span></td></tr>
+{% else %}<tr><td colspan="7" class="muted">Bo'sh</td></tr>{% endfor %}
+</table></div>
+{% endblock %}
